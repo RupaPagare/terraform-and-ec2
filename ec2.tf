@@ -1,31 +1,39 @@
-provider "aws" {
-  profile = "default"
-  region  = "us-east-1"
-  access_key = "AKIAXH6PITZUF3C33TIQ"
-  secret_key = "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"
+resource "aws_instance" "ec2-terraform"{
+    ami = "06489866022e12a14"
+    count=1
+    key_name = "Rupa.pem"
+    instance_type="t2-micro"
+    security_group=["security_jenkins_port"]
+    tags= {
+        Name= "jenkins_instance"
+    }
 }
 
-resource "aws_instance" "ec201" {
-  ami ="ami-087c17d1fe0178315"
-  instance_type = "t2.micro"
-  #role= "aws_iam_role.EC2S3TF1.name"
-  #iam_instance_profile = [aws_iam_instance_profile.EC2S3TF1.name]
-  security_groups = [aws_security_group.TerraformEc2_security1.name]
-  key_name = "ec2instance"
-  tags = {
-    ec2_create = "instance1"
-  }
-}
-resource "aws_default_vpc" "main" {
-  tags = {
-    Name = "main"
-  }
-}
-resource "aws_ebs_volume" "vol" {
-  availability_zone = "us-east-1a"
-  size              = 8
+resource "aws_security_group" "security_jenkins_port" {
+    name = "security_jenkins_port"
+    description = "security group for jenkins"
 
-  tags = {
-     key_name = "ec2instance"
-  }
+    ingress{
+        from_port =8080
+        to_port   =8080
+        protocol  = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress{
+        from_port =22
+        to_port   =22
+        protocol  = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+# outbound from jenkins server
+    egress{
+        from_port =0
+        to_port   =65535
+        protocol  = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags= {
+        Name= "security_jenkins_port"
+    }
 }
